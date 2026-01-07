@@ -1,0 +1,35 @@
+[project]
+name = "market-intel-agent-v1-1"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "guillermopickman-spec",email = "guillermopickman@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi (==0.115.0)",
+    "uvicorn (==0.30.6)",
+    "python-multipart (==0.0.9)",
+    "sqlalchemy (==2.0.32)",
+    "psycopg2-binary (==2.9.9)",
+    "pydantic-settings (==2.4.0)",
+    "python-dotenv (==1.0.1)",
+    "alembic (>=1.17.2,<2.0.0)",
+    "huggingface-hub (==0.24.5)",
+    "chromadb (>=1.4.0,<2.0.0)",
+    "duckduckgo-search (>=8.1.1,<9.0.0)",
+    "playwright (==1.46.0)",
+    "playwright-stealth (==1.0.6)",
+    "requests (==2.32.3)",
+    "resend (==2.0.0)",
+    "google-genai (>=1.56.0,<2.0.0)",
+    "ddgs (>=9.10.0,<10.0.0)",
+]
+
+[tool.poetry]
+packages = [{include = "market_intel_agent_v1"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

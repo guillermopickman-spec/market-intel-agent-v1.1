@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: market-intel-agent
+    ports:
+      - "8000:8000"
+    environment:
+      # Database
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/market_db}
+      
+      # LLM Configuration
+      - LLM_PROVIDER=${LLM_PROVIDER:-groq}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - HF_API_TOKEN=${HF_API_TOKEN}
+      - HF_MODEL_NAME=${HF_MODEL_NAME:-deepseek-ai/DeepSeek-V3}
+      - HF_API_URL=${HF_API_URL}
+      
+      # Embedding Configuration
+      - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER:-huggingface}
+      - HF_EMBED_URL=${HF_EMBED_URL:-https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2}
+      
+      # Integrations
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - NOTION_TOKEN=${NOTION_TOKEN}
+      - NOTION_PAGE_ID=${NOTION_PAGE_ID}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      
+      # System Settings
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8000}
+      - CHROMA_SERVER_NO_ANALYTICS=${CHROMA_SERVER_NO_ANALYTICS:-true}
+      - HTTP_REQUEST_TIMEOUT=${HTTP_REQUEST_TIMEOUT:-30}
+      - LLM_REQUEST_TIMEOUT=${LLM_REQUEST_TIMEOUT:-60}
+      - SCRAPER_TIMEOUT=${SCRAPER_TIMEOUT:-60}
+    volumes:
+      # Persist ChromaDB data
+      - ./chroma_db:/app/chroma_db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

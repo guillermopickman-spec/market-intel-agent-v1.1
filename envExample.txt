@@ -1,0 +1,58 @@
+# --- AI & LLM Configuration ---
+# LLM Provider: groq (recommended), gemini, or huggingface
+LLM_PROVIDER=groq
+
+# Hugging Face (get your token at https://huggingface.co/settings/tokens)
+HF_API_TOKEN=your_huggingface_token_here
+HF_API_URL=https://router.huggingface.co/v1/chat/completions
+HF_MODEL_NAME=deepseek-ai/DeepSeek-V3
+
+# Embedding Provider: huggingface (recommended, free) or gemini
+EMBEDDING_PROVIDER=huggingface
+HF_EMBED_URL=https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2
+
+# Gemini (get your key from https://makersuite.google.com/app/apikey)
+GEMINI_API_KEY=AI...your_gemini_api_key_here
+
+# Groq (fast OpenAI-compatible API, get your key at https://console.groq.com/keys)
+# Free tier: ~14,400 requests/day
+GROQ_API_KEY=your_groq_api_key_here
+# Groq model options (default: llama-3.1-8b-instant)
+# Options: llama-3.1-8b-instant, llama-3.1-70b-versatile, mixtral-8x7b-32768, gemma2-9b-it
+GROQ_MODEL_NAME=llama-3.1-8b-instant
+
+# --- Database (Neon.tech / PostgreSQL) ---
+# Format: postgresql://user:password@host:port/dbname
+DATABASE_URL=your_postgresql_connection_string_here
+
+# --- Notion Integration ---
+# Create an integration at https://www.notion.so/my-integrations
+NOTION_TOKEN=your_notion_integration_token_here
+NOTION_PAGE_ID=your_target_page_id_here
+
+# --- Email & Communication ---
+# For Gmail, use an "App Password," not your main password
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASSWORD=your_app_specific_password_here
+RESEND_API_KEY=your_resend_api_key_here
+
+# --- System Settings ---
+# If True, disables telemetry and usage analytics (recommended for privacy)
+ANONYMIZED_TELEMETRY=False
+
+# --- ChromaDB Settings ---
+# Disable ChromaDB telemetry (highly recommended for privacy)
+CHROMA_SERVER_NO_ANALYTICS=True
+
+# --- CORS Configuration ---
+# Comma-separated http:// URLs allowed for browser/web access
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000,http://127.0.0.1:3000,http://127.0.0.1:8000
+
+# --- Request Timeouts (in seconds) ---
+HTTP_REQUEST_TIMEOUT=30
+LLM_REQUEST_TIMEOUT=60
+SCRAPER_TIMEOUT=60
+
+# --- Project Metadata (optional overrides) ---
+PROJECT_NAME=Market Intelligence Agent
+VERSION=1.1.0

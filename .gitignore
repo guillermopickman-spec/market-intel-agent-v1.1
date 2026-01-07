@@ -1,0 +1,64 @@
+# === ENVIRONMENT & SECRETS ===
+# Never commit your API tokens or DB credentials
+.env
+.env.*
+!.env.example
+
+# === PYTHON & VIRTUAL ENVS ===
+venv/
+.venv/
+env/
+bin/
+lib/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# === CACHING & COMPILED CODE ===
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# === DATA & VECTOR STORES ===
+# Local RAG memory - Render/Production should rebuild or use external volumes
+chroma_db/
+*.sqlite3
+*.db
+
+# === LOGS & TEMPORARY FILES ===
+*.log
+logs/
+test-tools/
+test_mission.py
+test_grand_mission.py
+export_project_to_txt.py
+project_dump.txt
+.cache/
+
+# === OPERATING SYSTEM ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# === DOCKER ===
+# Ignore local docker data but keep the Dockerfile
+.dockerignore
