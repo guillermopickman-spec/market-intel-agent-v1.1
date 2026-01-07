@@ -146,24 +146,30 @@ class HuggingFaceEmbedder:
             return []
 
 
-# Singleton Instance Management
-_model: Optional[Union[GeminiEmbedder, HuggingFaceEmbedder]] = None
+class LocalSentenceTransformerEmbedder:
+    def __init__(self):
+        from sentence_transformers import SentenceTransformer
+        self.model_name = settings.LOCAL_EMBED_MODEL_NAME
+        self.model = SentenceTransformer(self.model_name)
 
-def get_embedding_model() -> Union[GeminiEmbedder, HuggingFaceEmbedder]:
-    """
-    Returns the appropriate embedding model based on EMBEDDING_PROVIDER setting.
-    Defaults to HuggingFace (free, no quota issues).
-    """
+    def embed(self, texts: List[str]) -> List[List[float]]:
+        if not texts:
+            return []
+        vectors = self.model.encode(texts, normalize_embeddings=True)
+        return vectors.tolist()
+
+
+# Singleton Instance Management
+_model: Optional[Union[GeminiEmbedder, HuggingFaceEmbedder, LocalSentenceTransformerEmbedder]] = None
+
+def get_embedding_model():
     global _model
     if _model is None:
         provider = settings.EMBEDDING_PROVIDER.lower()
-        
         if provider == "gemini":
-            logger.info("🔵 Using Gemini Embeddings")
             _model = GeminiEmbedder()
+        elif provider in ("local", "sentence_transformers", "sentence-transformers"):
+            _model = LocalSentenceTransformerEmbedder()
         else:
-            # Default to HuggingFace (free, reliable)
-            logger.info("🟢 Using HuggingFace Embeddings (Free Tier)")
             _model = HuggingFaceEmbedder()
-    
     return _model

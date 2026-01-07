@@ -36,6 +36,10 @@ class Settings(BaseSettings):
         default="https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2",
         validation_alias="HF_EMBED_URL"
     )
+    LOCAL_EMBED_MODEL_NAME: str = Field(
+        default="sentence-transformers/all-MiniLM-L6-v2",
+        validation_alias="LOCAL_EMBED_MODEL_NAME"
+    )
     # --- GROQ CONFIGURATION ---
     GROQ_API_KEY: str = Field(default="", validation_alias="GROQ_API_KEY")
     GROQ_MODEL_NAME: str = Field(

@@ -5,6 +5,7 @@ from chromadb.api.types import Metadatas # Import the specific type
 from core.logger import get_logger
 from chroma.collection import get_collection
 from embeddings.chunker import chunk_text
+from embeddings.model import get_embedding_model
 
 logger = get_logger("DocumentService")
 
@@ -37,11 +38,19 @@ def ingest_document(title: str, content: str, conversation_id: Optional[int] = N
         # Use cast to satisfy the Type Checker's invariance rules
         safe_metadatas = cast(Metadatas, raw_metadatas)
 
-        # 4. Storage 
+        # 4. Generate embeddings
+        model = get_embedding_model()
+        embeddings = model.embed(chunks)
+        if not embeddings:
+            logger.error("No embeddings generated during ingest")
+            return 0
+
+        # 5. Storage 
         collection.add(
             documents=chunks,
             ids=ids,
-            metadatas=safe_metadatas
+            metadatas=safe_metadatas,
+            embeddings=embeddings,
         )
         
         logger.info(f"✅ Ingested {len(chunks)} chunks for mission {conversation_id}.")
