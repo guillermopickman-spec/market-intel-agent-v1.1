@@ -29,7 +29,7 @@ services:
       - key: EMBEDDING_PROVIDER
         value: huggingface
       - key: HF_EMBED_URL
-        value: https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2
+        value: https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2
       
       # Integrations
       - key: RESEND_API_KEY
