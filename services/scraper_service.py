@@ -102,7 +102,23 @@ async def _scrape_web_internal(url: str, conversation_id: int = 0) -> str:
                     logger.warning(f"⚠️ Very little content extracted from {url} ({len(clean_text)} chars)")
                     return f"Error: Page loaded but very little content extracted ({len(clean_text)} chars). Site may be blocking automated access."
                 
-                ingest_document(f"Scrape: {url}", clean_text[:5000], conversation_id)
+                # Run ingestion in background - don't block scraping
+                # This prevents freezing when HuggingFace API is slow or warming up
+                async def _ingest_async():
+                    try:
+                        await asyncio.to_thread(
+                            ingest_document, 
+                            f"Scrape: {url}", 
+                            clean_text[:5000], 
+                            conversation_id
+                        )
+                        logger.info(f"✅ Background ingestion completed for {url}")
+                    except Exception as e:
+                        logger.error(f"⚠️ Background ingestion failed for {url}: {str(e)}")
+                
+                # Start ingestion in background without waiting
+                asyncio.create_task(_ingest_async())
+                
                 logger.info(f"✅ Successfully scraped {url} ({len(clean_text)} chars)")
                 return clean_text
                 

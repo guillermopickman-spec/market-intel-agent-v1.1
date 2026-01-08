@@ -54,4 +54,4 @@ services:
         value: "60"
       - key: SCRAPER_TIMEOUT
         value: "60"
-    healthCheckPath: /health
+    healthCheckPath: /ready

@@ -3,6 +3,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime
 import os
+from typing import Optional
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,15 +31,46 @@ if sys.platform == 'win32':
 
 logger = get_logger("Main")
 
+# Cache ChromaDB status to avoid re-initialization on every health check
+_chromadb_status: Optional[str] = None
+_chromadb_initialized = False
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global _chromadb_status, _chromadb_initialized
+    
     logger.info("🚀 MIA Intelligence Systems Starting...")
+    
+    # Database initialization
     try:
         Base.metadata.create_all(bind=engine)
         logger.info("✅ Database Synchronization: Success")
     except Exception as e:
         logger.critical(f"❌ Database Error: {str(e)}")
+    
+    # Pre-initialize ChromaDB in background (non-blocking with timeout)
+    # This prevents slow initialization during first health check
+    async def init_chromadb():
+        global _chromadb_status, _chromadb_initialized
+        try:
+            logger.info("🔄 Initializing ChromaDB...")
+            from chroma.collection import get_chroma_client
+            client = get_chroma_client()
+            _ = client.list_collections()
+            _chromadb_status = "up"
+            _chromadb_initialized = True
+            logger.info("✅ ChromaDB Initialized: Success")
+        except Exception as e:
+            logger.warning(f"⚠️ ChromaDB initialization warning: {str(e)}")
+            _chromadb_status = f"error: {str(e)}"
+            _chromadb_initialized = True  # Mark as attempted even if failed
+    
+    # Run ChromaDB initialization in background (non-blocking)
+    # This allows the app to start quickly while ChromaDB initializes
+    asyncio.create_task(init_chromadb())
+    
     yield
+    
     logger.info("🛑 Shutting down...")
 
 app = FastAPI(
@@ -69,11 +101,26 @@ app.include_router(documents.router, tags=["Documents"])
 async def root():
     return {"status": "online", "version": "1.1.0"}
 
+@app.get("/ready", tags=["System"])
+async def ready_check():
+    """
+    Lightweight readiness check for Render.
+    Returns 200 as soon as the app is up (doesn't wait for ChromaDB).
+    This allows Render to mark the service as ready quickly.
+    """
+    return {"status": "ready", "version": "1.1.0"}
+
 @app.get("/health", tags=["System"])
 async def health_check():
+    """
+    Full health check with database and ChromaDB status.
+    Uses cached ChromaDB status if available to avoid re-initialization.
+    """
+    global _chromadb_status, _chromadb_initialized
+    
     server_time = datetime.utcnow().isoformat() + "Z"
 
-    # Database check
+    # Database check (fast)
     try:
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
@@ -81,14 +128,19 @@ async def health_check():
     except Exception as e:
         db_status = f"error: {str(e)}"
 
-    # ChromaDB vector store check
-    try:
-        from chroma.collection import get_chroma_client
-        client = get_chroma_client()  # Now this gets the actual client
-        _ = client.list_collections()
-        chromadb_status = "up"
-    except Exception as e:
-        chromadb_status = f"error: {str(e)}"
+    # ChromaDB check (use cached status if available, otherwise check)
+    if _chromadb_initialized:
+        # Use cached status to avoid re-initialization
+        chromadb_status = _chromadb_status or "unknown"
+    else:
+        # Fallback: check directly if not yet initialized
+        try:
+            from chroma.collection import get_chroma_client
+            client = get_chroma_client()
+            _ = client.list_collections()
+            chromadb_status = "up"
+        except Exception as e:
+            chromadb_status = f"error: {str(e)}"
 
     overall_status = (
         "ok" if db_status == "up" and chromadb_status == "up"
